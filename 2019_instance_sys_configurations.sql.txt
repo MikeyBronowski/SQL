@@ -1,0 +1,11 @@
+select 
+configuration_id,
+name,
+CAST(value AS nvarchar(max)) AS value,
+CAST(minimum AS nvarchar(max)) AS minimum,
+CAST(maximum AS nvarchar(max)) AS maximum,
+CAST(value_in_use AS nvarchar(max)) AS value_in_use,
+description,
+is_dynamic,
+is_advanced
+from sys.configurations

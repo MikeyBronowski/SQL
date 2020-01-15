@@ -1,0 +1,72 @@
+USE [master];	-- change if needed 
+GO 
+
+IF OBJECT_ID('dbo.sp_readerrorlog2') IS NULL 
+  EXEC ('CREATE PROCEDURE [dbo].[sp_readerrorlog2] AS RETURN 0;'); 
+GO 
+
+CREATE PROCEDURE [dbo].[sp_readerrorlog2] 
+--@p1 INT = 0,  
+@p2 INT = 0, -- [1] Error log; [2] SQL Agent log;  
+@p3 NVARCHAR(MAX) = NULL,	-- search string #1
+@p4 NVARCHAR(MAX) = NULL	-- search string #2
+AS 
+BEGIN 
+SET NOCOUNT ON; 
+
+-- BEGIN 001 Find out what error logs are available; 
+DECLARE @errorlogFilesCount INT = 0; 
+DECLARE @agentlogFilesCount INT = 0; 
+
+CREATE TABLE #tbl_errorlogfiles (c1 INT, c2 DATETIME, c3 BIGINT, c4 INT DEFAULT 1); 
+CREATE TABLE #tbl_agentlogfiles (c1 INT, c2 DATETIME, c3 BIGINT, c4 INT DEFAULT 2); 
+
+INSERT INTO #tbl_errorlogFiles (c1, c2, c3) 
+EXECUTE master.sys.sp_enumerrorlogs 1; 
+
+INSERT INTO #tbl_agentlogFiles (c1, c2, c3) 
+EXECUTE master.sys.sp_enumerrorlogs 2; 
+
+SELECT @errorlogFilesCount = COUNT(*) FROM #tbl_errorlogFiles; 
+SELECT @agentlogFilesCount = COUNT(*) FROM #tbl_agentlogFiles; 
+-- END 001 Find out what error logs are available;	 
+
+-- BEGIN 002 Load entries to temp tables 
+DECLARE @i INT = 0 
+CREATE TABLE #tbl_errorlog (c1 DATETIME, c2 NVARCHAR(128), c3 NVARCHAR(MAX)); 
+CREATE TABLE #tbl_agentlog (c1 DATETIME, c2 NVARCHAR(128), c3 NVARCHAR(MAX)); 
+
+IF @p2 = 1 OR @p2 = 0 OR @p2 IS NULL 
+BEGIN 
+	WHILE @i < @errorlogFilesCount 
+	BEGIN 
+		INSERT INTO #tbl_errorlog (c1, c2, c3) 
+		EXECUTE sp_readerrorlog @i, 1, @p3, @p4; 
+		SET @i = @i+1; 
+	END 
+	SELECT c1 AS LogDate, c2 AS ProcessInfo, c3 as Text FROM #tbl_errorlog ORDER BY c1; 
+END 
+
+IF @p2 = 2 OR @p2 = 0 OR @p2 IS NULL 
+BEGIN 
+	SET @i = 0 
+	WHILE @i < @agentlogFilesCount 
+	BEGIN 
+		INSERT INTO #tbl_agentlog (c1, c2, c3) 
+		EXECUTE sp_readerrorlog @i, 2, @p3, @p4; 
+		SET @i = @i+1; 
+	END 
+	SELECT c1 AS LogDate, c2 AS ErrorLevel, c3 as Text FROM #tbl_agentlog ORDER BY c1; 
+END 
+-- END 002 Load entries to temp tables  
+
+IF @p2 <> 1 AND @p2 <> 2 AND @p2 <> 0 AND @p2 IS NOT NULL 
+BEGIN 
+	PRINT 'Invalid parameter number #1. Please set a proper one:'; 
+	PRINT '0 or NULL = Error and Agent logs;' 
+	PRINT '1 = Error log only;' 
+	PRINT '2 = Agent log only;' 
+	RETURN 0 
+END 
+
+END 
