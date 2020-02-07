@@ -5,13 +5,11 @@ foreach ($InstanceName in $InstalledInstances)
 {
        $in = (Get-ItemProperty "$AllSqlReg\Instance Names\SQL").$InstanceName
        $SqlReg = $AllSqlReg+"\"+$in
-       $keys = @('MSSQLServer','SQLServerAgent')
+       $keys = @('MSSQLServer','SQLServerAgent','CPE','MSSQLServer\HADR','MSSQLServer\Parameters')
        foreach ($key in $keys)
        {
          $KeyValue = $SqlReg+'\\'+$key
          $KeyValue
         (Get-ItemProperty "$KeyValue")
        }
-       #(Get-ItemProperty "$SqlReg\\MSSQLServer")
-       #(Get-ItemProperty "$SqlReg\\SQLServerAgent")
 }
