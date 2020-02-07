@@ -1,1 +1,5 @@
-select * from sys.server_triggers
+SELECT
+CAST(GETDATE() AS datetime2) AS CollectionDate,
+CAST(@@SERVERNAME AS nvarchar(128)) AS ServerName,
+*
+from sys.server_triggers;

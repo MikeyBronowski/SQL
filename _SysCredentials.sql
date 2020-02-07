@@ -1,1 +1,5 @@
-select * from sys.credentials;
+SELECT
+CAST(GETDATE() AS datetime2) AS CollectionDate,
+CAST(@@SERVERNAME AS nvarchar(128)) AS ServerName,
+*
+from sys.credentials;

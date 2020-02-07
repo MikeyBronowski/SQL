@@ -1,4 +1,8 @@
-select * from msdb.dbo.sysjobs JOBS
+SELECT
+CAST(GETDATE() AS datetime2) AS CollectionDate,
+CAST(@@SERVERNAME AS nvarchar(128)) AS ServerName,
+* 
+from msdb.dbo.sysjobs JOBS
 left join msdb.dbo.systargetservers TARGETS on TARGETS.server_id = JOBS.originating_server_id
 left join msdb.dbo.sysoperators OPERS on OPERS.id = JOBS.notify_email_operator_id
 left join sys.server_principals OWNERS on OWNERS.sid = JOBS.owner_sid
