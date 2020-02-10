@@ -1,0 +1,1 @@
+select * from sys.dm_resource_governor_configuration
